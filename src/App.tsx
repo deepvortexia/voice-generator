@@ -158,7 +158,7 @@ function AppContent() {
 
   const downloadAudio = () => {
     if (!resultAudio) return
-    window.location.href = `/api/download?url=${encodeURIComponent(resultAudio)}&filename=voice.mp3`
+    fetch(resultAudio).then(r=>r.blob()).then(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='voice.mp3';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)})
   }
 
   const resetAll = () => {

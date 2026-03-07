@@ -156,9 +156,35 @@ function AppContent() {
     }
   }
 
-  const downloadAudio = () => {
+  const downloadAudio = async () => {
     if (!resultAudio) return
-    fetch(resultAudio).then(r=>r.blob()).then(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='voice.mp3';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)})
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    const filename = `voice-${Date.now()}.mp3`
+    try {
+      const response = await fetch(resultAudio)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const blob = await response.blob()
+      if (isMobile) {
+        const file = new File([blob], filename, { type: 'audio/mpeg' })
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file] })
+          return
+        }
+        window.open(resultAudio, '_blank')
+        return
+      }
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download error:', err)
+      alert('Failed to download audio. Please try again.')
+    }
   }
 
   const resetAll = () => {

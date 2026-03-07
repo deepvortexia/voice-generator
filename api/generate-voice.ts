@@ -150,30 +150,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Upload to Supabase Storage for a permanent URL
-    let audioUrl: string = outputUrl
-    try {
-      const audioRes = await fetch(outputUrl)
-      if (audioRes.ok) {
-        const audioBuffer = await audioRes.arrayBuffer()
-        const fileName = `${userId}/${Date.now()}-voice.mp3`
-        const { error: uploadError } = await supabase.storage
-          .from('generated-audio')
-          .upload(fileName, audioBuffer, { contentType: 'audio/mpeg', upsert: false })
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('generated-audio')
-            .getPublicUrl(fileName)
-          if (publicUrl) {
-            audioUrl = publicUrl
-            console.log('[generate-voice] Uploaded to Supabase Storage:', audioUrl)
-          }
-        } else {
-          console.error('[generate-voice] Storage upload failed, using Replicate URL:', uploadError)
-        }
-      }
-    } catch (storageErr) {
-      console.error('[generate-voice] Storage error, using Replicate URL:', storageErr)
-    }
+    const audioRes = await fetch(outputUrl)
+    if (!audioRes.ok) throw new Error(`Failed to fetch Replicate output: ${audioRes.status}`)
+    const audioBuffer = await audioRes.arrayBuffer()
+    const fileName = `${userId}/${Date.now()}-voice.mp3`
+    const { error: uploadError } = await supabase.storage
+      .from('generated-audio')
+      .upload(fileName, audioBuffer, { contentType: 'audio/mpeg', upsert: false })
+    if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`)
+    const { data: { publicUrl } } = supabase.storage
+      .from('generated-audio')
+      .getPublicUrl(fileName)
+    if (!publicUrl) throw new Error('Failed to get public URL after upload')
+    const audioUrl: string = publicUrl
+    console.log('[generate-voice] Uploaded to Supabase Storage:', audioUrl)
 
     // Log generation (non-blocking)
     void supabase

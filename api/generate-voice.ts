@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { text } = req.body
+  const { text, exaggeration, referenceAudio } = req.body
 
   if (!text || typeof text !== 'string' || !text.trim()) {
     return res.status(400).json({ error: 'Text is required' })
@@ -97,6 +97,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         input: {
           text: text.trim(),
+          exaggeration: exaggeration ?? 0.5,
+          ...(referenceAudio ? { audio_prompt: referenceAudio } : {}),
         },
       }),
     })

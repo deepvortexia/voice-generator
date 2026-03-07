@@ -97,12 +97,22 @@ function AppContent() {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 100000)
 
+      let referenceAudioBase64: string | undefined
+      if (referenceAudio) {
+        referenceAudioBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(referenceAudio)
+        })
+      }
+
       let response: Response
       try {
         response = await fetch('/api/generate-voice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ text: text.trim() }),
+          body: JSON.stringify({ text: text.trim(), exaggeration, ...(referenceAudioBase64 ? { referenceAudio: referenceAudioBase64 } : {}) }),
           signal: controller.signal,
         })
       } catch (fetchErr: any) {

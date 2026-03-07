@@ -156,18 +156,9 @@ function AppContent() {
     }
   }
 
-  const downloadAudio = async () => {
+  const downloadAudio = () => {
     if (!resultAudio) return
-    const r = await fetch(resultAudio)
-    const blob = await r.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'voice.mp3'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    window.open(resultAudio + '?download=1', '_blank')
   }
 
   const resetAll = () => {

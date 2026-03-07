@@ -86,8 +86,8 @@ export default function Header() {
           />
         </div>
 
-        <h1 className="brand-title-text">DΞΞP VORTΞX AI</h1>
-        <p className="primary-tagline">✂️ Remove backgrounds from images instantly</p>
+        <h1 className="brand-title-text">AI Voice Generator</h1>
+        <p className="primary-tagline">🎙️ Generate realistic AI voices from text instantly</p>
 
         <div className="hub-pills-container">
           {user ? (

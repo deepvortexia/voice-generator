@@ -165,7 +165,7 @@ function AppContent() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `voice-${Date.now()}.mp3`
+      link.download = 'voice-generated.mp3'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

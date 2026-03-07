@@ -18,6 +18,8 @@ const cleanUrlParams = () => {
 
 function AppContent() {
   const [text, setText] = useState('')
+  const [exaggeration, setExaggeration] = useState(0.5)
+  const [referenceAudio, setReferenceAudio] = useState<File | null>(null)
   const [resultAudio, setResultAudio] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -197,6 +199,41 @@ function AppContent() {
             <div className={`char-counter ${text.length >= MAX_CHARS ? 'char-counter-limit' : ''}`}>
               {text.length} / {MAX_CHARS}
             </div>
+          </div>
+
+          <p className="voice-tip">💡 Tip: add [laugh] [chuckle] [cough] in your text</p>
+
+          <div className="voice-option">
+            <label className="voice-option-label">
+              Voice Emotion <span className="voice-option-value">{exaggeration.toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min={0.1}
+              max={1.0}
+              step={0.05}
+              value={exaggeration}
+              onChange={e => setExaggeration(parseFloat(e.target.value))}
+              disabled={isLoading}
+              className="voice-slider"
+            />
+            <p className="voice-option-hint">0.1 = monotone · 0.5 = neutral · 1.0 = dramatic</p>
+          </div>
+
+          <div className="voice-option">
+            <label className="voice-option-label">Clone a Voice <span className="voice-option-optional">(optional)</span></label>
+            <label className="voice-file-label">
+              <input
+                type="file"
+                accept=".mp3,.wav,.m4a"
+                disabled={isLoading}
+                onChange={e => setReferenceAudio(e.target.files?.[0] ?? null)}
+                className="voice-file-input"
+              />
+              <span className="voice-file-btn">📂 Choose File</span>
+              <span className="voice-file-name">{referenceAudio ? referenceAudio.name : 'No file chosen'}</span>
+            </label>
+            <p className="voice-option-hint">Upload 5-30 sec clip to clone that voice</p>
           </div>
 
           <button

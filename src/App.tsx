@@ -158,21 +158,13 @@ function AppContent() {
 
   const downloadAudio = async () => {
     if (!resultAudio) return
-    try {
-      const response = await fetch(resultAudio)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'voice-generated.mp3'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-    } catch {
-      window.open(resultAudio, '_blank')
-    }
+    const r = await fetch(resultAudio)
+    const blob = await r.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'deep-vortex-voice.mp3'
+    document.body.appendChild(a); a.click()
+    document.body.removeChild(a); URL.revokeObjectURL(url)
   }
 
   const resetAll = () => {

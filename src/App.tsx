@@ -1,4 +1,3 @@
-// src/App.tsx (Background Remover)
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import Header from './components/Header'
@@ -8,41 +7,33 @@ import { PricingModal } from './components/PricingModal'
 import { Notification } from './components/Notification'
 import { useCredits } from './hooks/useCredits'
 import { AuthCallback } from './pages/AuthCallback'
-import { Gallery } from './components/Gallery'
 
 const CREDIT_REFRESH_ERROR = 'Payment successful, but there was a temporary issue syncing your credits. Please refresh the page to see your updated balance.'
 const PENDING_STRIPE_SESSION_KEY = 'pending_stripe_session'
+const MAX_CHARS = 500
 
 const cleanUrlParams = () => {
   window.history.replaceState({}, '', window.location.pathname)
 }
 
 function AppContent() {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [uploadedImageUrl, setUploadedImageUrl] = useState('')
-  const [resultImage, setResultImage] = useState('')
+  const [text, setText] = useState('')
+  const [resultAudio, setResultAudio] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [isLoaded, setIsLoaded] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [toast, setToast] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' } | null>(null)
-  const [favRefreshKey, setFavRefreshKey] = useState(0)
-  const [favSaving, setFavSaving] = useState(false)
-  const [favSaved, setFavSaved] = useState(false)
 
   const { user, session, loading } = useAuth()
   const { hasCredits, refreshProfile } = useCredits()
 
   const processedSessionIdRef = useRef<string | null>(null)
   const processedPendingSessionRef = useRef(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
-  useEffect(() => {
-    setIsLoaded(true)
-  }, [])
+  useEffect(() => { setIsLoaded(true) }, [])
 
   useEffect(() => {
     const handleStripeReturn = async () => {
@@ -58,7 +49,7 @@ function AppContent() {
           setShowNotification(true)
           cleanUrlParams()
         } catch {
-          setError(CREDIT_REFRESH_ERROR)
+          setToast({ title: 'Sync Error', message: CREDIT_REFRESH_ERROR, type: 'warning' })
         }
       } else {
         localStorage.setItem(PENDING_STRIPE_SESSION_KEY, sessionId)
@@ -70,7 +61,7 @@ function AppContent() {
   }, [loading, user])
 
   useEffect(() => {
-    const processPendingStripeSession = async () => {
+    const processPending = async () => {
       if (!user) { processedPendingSessionRef.current = false; return }
       if (processedPendingSessionRef.current) return
       const pendingSession = localStorage.getItem(PENDING_STRIPE_SESSION_KEY)
@@ -82,73 +73,42 @@ function AppContent() {
           setShowNotification(true)
         } catch {
           processedPendingSessionRef.current = false
-          setError(CREDIT_REFRESH_ERROR)
+          setToast({ title: 'Sync Error', message: CREDIT_REFRESH_ERROR, type: 'warning' })
         }
       }
     }
-    processPendingStripeSession()
+    processPending()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const handleFileSelect = (file: File) => {
-    if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
-      setError('Please upload a JPG, PNG, or WEBP image.')
-      return
-    }
-    setError('')
-    setResultImage('')
-    setUploadedFile(file)
-    const url = URL.createObjectURL(file)
-    setUploadedImageUrl(url)
-  }
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) handleFileSelect(file)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFileSelect(file)
-  }
-
-  const removeBackground = async () => {
-    if (!uploadedFile) { setError('Please upload an image first.'); return }
-    if (!user) { setError('Please sign in to remove backgrounds'); setIsAuthModalOpen(true); return }
-    if (!hasCredits) { setError('You have run out of credits. Please purchase more to continue.'); setIsPricingModalOpen(true); return }
+  const generateVoice = async () => {
+    if (!text.trim()) { setToast({ title: 'No Text', message: 'Please enter some text to generate a voice.', type: 'warning' }); return }
+    if (!user) { setIsAuthModalOpen(true); return }
+    if (!hasCredits) { setIsPricingModalOpen(true); return }
 
     setIsLoading(true)
-    setError('')
+    setResultAudio('')
     setToast(null)
 
     try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve((reader.result as string).split(',')[1])
-        reader.onerror = reject
-        reader.readAsDataURL(uploadedFile)
-      })
-
       const token = session?.access_token
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 55000)
+      const timeout = setTimeout(() => controller.abort(), 100000)
 
       let response: Response
       try {
-        response = await fetch('/api/remove-background', {
+        response = await fetch('/api/generate-voice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ imageBase64: base64, mimeType: uploadedFile.type }),
+          body: JSON.stringify({ text: text.trim() }),
           signal: controller.signal,
         })
       } catch (fetchErr: any) {
         clearTimeout(timeout)
         if (fetchErr.name === 'AbortError') {
-          setToast({ title: 'Request Timed Out', message: 'The processing took too long. Please try again. No credits were deducted.', type: 'warning' })
+          setToast({ title: 'Request Timed Out', message: 'Generation took too long. Please try again. No credits were deducted.', type: 'warning' })
         } else {
-          setToast({ title: 'Network Error', message: 'Could not connect to the server. Please check your connection and try again.', type: 'error' })
+          setToast({ title: 'Network Error', message: 'Could not connect to the server. Please check your connection.', type: 'error' })
         }
         return
       }
@@ -158,99 +118,55 @@ function AppContent() {
         const data = await response.json().catch(() => ({}))
         switch (response.status) {
           case 401:
-            setToast({ title: 'Session Expired', message: 'Your session has expired. Please refresh the page and sign in again. No credits were deducted.', type: 'error' })
+            setToast({ title: 'Session Expired', message: 'Please refresh and sign in again. No credits were deducted.', type: 'error' })
             break
           case 402:
             setToast({ title: 'Insufficient Credits', message: "You don't have enough credits. Purchase more to continue.", type: 'warning' })
             setIsPricingModalOpen(true)
             break
           case 429:
-            setToast({ title: 'Too Many Requests', message: 'Please wait a moment before trying again. No credits were deducted.', type: 'warning' })
-            break
-          case 503:
-            setToast({ title: 'Service Unavailable', message: 'The background removal service is temporarily unavailable. Please try again in a few minutes. No credits were deducted.', type: 'error' })
+            setToast({ title: 'Too Many Requests', message: 'Please wait a moment before trying again.', type: 'warning' })
             break
           default:
-            setToast({ title: 'Processing Failed', message: (data.error || 'An unexpected error occurred') + '. No credits were deducted.', type: 'error' })
+            setToast({ title: 'Generation Failed', message: (data.error || 'An unexpected error occurred') + '. No credits were deducted.', type: 'error' })
             break
         }
         return
       }
 
       const data = await response.json()
-      setResultImage(data.image)
+      setResultAudio(data.audio)
       await refreshProfile()
     } catch (err: any) {
-      setToast({ title: 'Processing Failed', message: err.message || 'An unexpected error occurred.', type: 'error' })
+      setToast({ title: 'Generation Failed', message: err.message || 'An unexpected error occurred.', type: 'error' })
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Reset saved badge when a new result arrives
-  useEffect(() => { setFavSaved(false) }, [resultImage])
-
-  const saveFavorite = async () => {
-    if (!resultImage || favSaving || favSaved) return
-    if (!session) { setIsAuthModalOpen(true); return }
-    setFavSaving(true)
+  const downloadAudio = async () => {
+    if (!resultAudio) return
     try {
-      console.log('[saveFavorite] Posting to /api/favorites, token prefix:', session.access_token?.slice(0, 20))
-      const res = await fetch('/api/favorites', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ result_url: resultImage, original_url: uploadedImageUrl || null }),
-      })
-      const body = await res.json().catch(() => ({}))
-      console.log('[saveFavorite] Response status:', res.status, '| body:', JSON.stringify(body))
-      if (res.ok) {
-        setFavSaved(true)
-        setFavRefreshKey(k => k + 1)
-        setToast({ title: 'Added to Favorites!', message: 'Your image has been saved. View it in ⭐ Favorites.', type: 'success' })
-      } else {
-        setToast({ title: 'Could not save', message: body.error || 'Failed to save favorite.', type: 'error' })
-      }
-    } catch {}
-    finally {
-      setFavSaving(false)
-    }
-  }
-
-  const downloadResult = async () => {
-    if (!resultImage) return
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    try {
-      const response = await fetch(resultImage)
+      const response = await fetch(resultAudio)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const blob = await response.blob()
-      if (isMobile) {
-        const filename = `background-removed-${Date.now()}.png`
-        const file = new File([blob], filename, { type: blob.type })
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file] })
-          return
-        }
-        window.open(resultImage, '_blank')
-        return
-      }
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `background-removed-${Date.now()}.png`
+      link.download = `voice-${Date.now()}.mp3`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
     } catch {
-      alert('Failed to download image. Please try right-clicking and "Save Image As..."')
+      window.open(resultAudio, '_blank')
     }
   }
 
   const resetAll = () => {
-    setResultImage('')
-    setUploadedFile(null)
-    setUploadedImageUrl('')
-    setError('')
+    setResultAudio('')
+    setText('')
+    setToast(null)
   }
 
   return (
@@ -267,105 +183,76 @@ function AppContent() {
 
       <div className="main-content">
         <div className="prompt-section-wrapper">
-          <h3 className="prompt-section-title"><span className="title-icon">🖼️</span>Upload Your Image</h3>
+          <h3 className="prompt-section-title"><span className="title-icon">🎙️</span>Enter Your Text</h3>
 
-          <div
-            className={`upload-zone${isDragging ? ' upload-zone-dragging' : ''}${uploadedImageUrl ? ' upload-zone-has-image' : ''}`}
-            onClick={() => !uploadedImageUrl && fileInputRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-          >
-            {uploadedImageUrl ? (
-              <div className="upload-zone-preview">
-                <img src={uploadedImageUrl} alt="Uploaded" className="upload-preview-img" />
-                <button
-                  className="upload-change-btn"
-                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
-                >
-                  Change Image
-                </button>
-              </div>
-            ) : (
-              <div className="upload-zone-placeholder">
-                <span className="upload-icon">📁</span>
-                <p className="upload-text">Drop your image here or <span className="upload-link">browse</span></p>
-                <p className="upload-hint">Supports JPG, PNG, WEBP</p>
-              </div>
-            )}
+          <div className="voice-input-wrapper">
+            <textarea
+              className="voice-textarea"
+              value={text}
+              onChange={e => setText(e.target.value.slice(0, MAX_CHARS))}
+              placeholder="Type or paste the text you want to convert to speech..."
+              rows={5}
+              disabled={isLoading}
+            />
+            <div className={`char-counter ${text.length >= MAX_CHARS ? 'char-counter-limit' : ''}`}>
+              {text.length} / {MAX_CHARS}
+            </div>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFileInputChange}
-            style={{ display: 'none' }}
-          />
 
           <button
             className="generate-btn-enhanced"
-            onClick={removeBackground}
-            disabled={isLoading || !uploadedFile}
+            onClick={generateVoice}
+            disabled={isLoading || !text.trim()}
             style={{ marginTop: '1rem', width: '100%' }}
           >
             {isLoading ? (
-              <><span className="spinner"></span><span className="btn-text">Removing Background...</span></>
+              <><span className="spinner"></span><span className="btn-text">Generating Voice...</span></>
             ) : (
-              <><span className="btn-icon">✂️</span><span className="btn-text">Remove Background</span></>
+              <><span className="btn-icon">🎙️</span><span className="btn-text">Generate Voice</span></>
             )}
           </button>
         </div>
 
-        {error && <div className="error-message"><span className="error-icon">⚠️</span>{error}</div>}
-
         {isLoading && (
           <div className="loading-section">
             <div className="loading-spinner-large"></div>
-            <p className="loading-message">Removing background... ✨</p>
-            <p className="loading-hint">This usually takes 3-8 seconds</p>
+            <p className="loading-message">Generating your voice... 🎙️</p>
+            <p className="loading-hint">This usually takes 5–15 seconds</p>
           </div>
         )}
 
-        {resultImage && !isLoading && (
+        {resultAudio && !isLoading && (
           <div className="result-section slide-up">
-            <h2 className="result-title">Background Removed ✨</h2>
-            <div className="before-after-container">
-              <div className="before-after-card">
-                <p className="before-after-label">Before</p>
-                <img src={uploadedImageUrl} alt="Original" className="generated-image fade-in-image" loading="lazy" />
-              </div>
-              <div className="before-after-divider">→</div>
-              <div className="before-after-card">
-                <p className="before-after-label">After</p>
-                <div className="transparent-bg-checker">
-                  <img src={resultImage} alt="Background removed" className="generated-image fade-in-image" loading="lazy" />
-                </div>
-              </div>
+            <h2 className="result-title">Voice Generated ✨</h2>
+
+            <div className="audio-player-wrapper">
+              <audio
+                ref={audioRef}
+                controls
+                src={resultAudio}
+                className="audio-player"
+                autoPlay
+              />
             </div>
+
             <div className="action-buttons">
-              <button onClick={downloadResult} className="action-btn download-btn"><span>📥</span> Download PNG</button>
-              <button onClick={saveFavorite} className="action-btn save-btn" disabled={favSaving || favSaved}>
-                <span>⭐</span> {favSaved ? 'Added!' : favSaving ? 'Saving...' : 'Add to Favorites'}
-              </button>
-              <button onClick={resetAll} className="action-btn regenerate-btn"><span>🔄</span> New Image</button>
+              <button onClick={downloadAudio} className="action-btn download-btn"><span>📥</span> Download MP3</button>
+              <button onClick={resetAll} className="action-btn regenerate-btn"><span>🔄</span> New Voice</button>
             </div>
           </div>
         )}
       </div>
 
-      <Gallery refreshKey={favRefreshKey} />
-
       <section className="ecosystem-section">
         <h2 className="ecosystem-heading">Complete AI Ecosystem</h2>
         <div className="ecosystem-grid">
           {[
-            { name: 'Emoticons',  icon: '😃', desc: 'Custom emoji creation',          status: 'Available Now',  isActive: true,  href: 'https://emoticons.deepvortexai.art',  isCurrent: false },
-            { name: 'Image Gen',  icon: '🎨', desc: 'AI artwork',                      status: 'Available Now',  isActive: true,  href: 'https://images.deepvortexai.art',     isCurrent: false },
-            { name: 'Remove BG',  icon: '✂️', desc: 'Remove backgrounds instantly',    status: 'Available Now',  isActive: true,  href: '#',                                   isCurrent: true  },
-            { name: 'Upscaler',   icon: '🔍', desc: 'Upscale images up to 4x',         status: 'Available Now',  isActive: true,  href: 'https://upscaler.deepvortexai.art',   isCurrent: false },
-            { name: '3D Generator', icon: '🧊', desc: 'Image to 3D model',             status: 'Available Now',  isActive: true,  href: 'https://3d.deepvortexai.art',         isCurrent: false },
-            { name: 'More Tools', icon: '✨', desc: 'Expanding soon',                  status: 'In Development', isActive: false },
+            { name: 'Emoticons',   icon: '😃', desc: 'Custom emoji creation',          status: 'Available Now',  isActive: true,  href: 'https://emoticons.deepvortexai.art', isCurrent: false },
+            { name: 'Image Gen',   icon: '🎨', desc: 'AI artwork from text',            status: 'Available Now',  isActive: true,  href: 'https://images.deepvortexai.art',    isCurrent: false },
+            { name: 'Remove BG',   icon: '✂️', desc: 'Remove backgrounds instantly',   status: 'Available Now',  isActive: true,  href: 'https://bgremover.deepvortexai.art', isCurrent: false },
+            { name: 'Upscaler',    icon: '🔍', desc: 'Upscale images up to 4x',         status: 'Available Now',  isActive: true,  href: 'https://upscaler.deepvortexai.art',  isCurrent: false },
+            { name: '3D Generator',icon: '🧊', desc: 'Image to 3D model',               status: 'Available Now',  isActive: true,  href: 'https://3d.deepvortexai.art',        isCurrent: false },
+            { name: 'Voice Gen',   icon: '🎙️', desc: 'AI text to speech',              status: 'Available Now',  isActive: true,  href: '#',                                  isCurrent: true  },
           ].map((tool, idx) => (
             <div
               key={idx}
@@ -434,7 +321,6 @@ function App() {
       </AuthProvider>
     )
   }
-
   return (
     <AuthProvider>
       <AppContent />

@@ -19,7 +19,6 @@ export function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>([])
   const [loading, setLoading] = useState(false)
-  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set())
 
   const loadFavorites = useCallback(async () => {
     if (!token) return
@@ -64,8 +63,8 @@ export function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
       if (!res.ok) throw new Error()
       const blob = await res.blob()
       if (isMobile) {
-        const filename = `bg-removed-${id.slice(0, 8)}.png`
-        const file = new File([blob], filename, { type: blob.type })
+        const filename = `voice-${Date.now()}.mp3`
+        const file = new File([blob], filename, { type: 'audio/mpeg' })
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({ files: [file] })
           return
@@ -76,7 +75,7 @@ export function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `bg-removed-${id.slice(0, 8)}.png`
+      link.download = `voice-${Date.now()}.mp3`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -106,32 +105,15 @@ export function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
           <div className="gallery-grid">
             {favorites.map((item) => (
               <div key={item.id} className="gallery-item">
-                {brokenImages.has(item.id) ? (
-                  <div className="image-placeholder-broken">
-                    <span className="placeholder-icon">😕</span>
-                    <p className="placeholder-text">Image unavailable</p>
-                  </div>
-                ) : (
-                  <div className="transparent-bg-checker gallery-item-img-wrap">
-                    <img
-                      src={item.resultUrl}
-                      alt="Saved result"
-                      loading="lazy"
-                      decoding="async"
-                      onError={() => setBrokenImages(prev => new Set(prev).add(item.id))}
-                      onLoad={() => setBrokenImages(prev => { const s = new Set(prev); s.delete(item.id); return s })}
-                    />
-                  </div>
-                )}
+                <audio controls src={item.resultUrl} style={{ width: '100%' }} />
                 <div className="gallery-item-info">
                   <p className="gallery-date">{new Date(item.createdAt).toLocaleDateString()}</p>
                 </div>
                 <button
                   className="gallery-download-btn"
                   onClick={(e) => { e.stopPropagation(); handleDownload(item.resultUrl, item.id) }}
-                  disabled={brokenImages.has(item.id)}
                   title="Download"
-                  aria-label="Download image"
+                  aria-label="Download audio"
                 >💾</button>
                 <button
                   className="gallery-delete-btn"

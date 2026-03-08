@@ -56,7 +56,7 @@ export function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
     } catch {}
   }
 
-  const handleDownload = async (resultUrl: string, id: string) => {
+  const handleDownload = async (resultUrl: string, _id: string) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     try {
       const res = await fetch(resultUrl, { mode: 'cors' })

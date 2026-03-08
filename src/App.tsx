@@ -21,6 +21,8 @@ function AppContent() {
   const [exaggeration, setExaggeration] = useState(0.5)
   const [referenceAudio, setReferenceAudio] = useState<File | null>(null)
   const [resultAudio, setResultAudio] = useState('')
+  const [favSaving, setFavSaving] = useState(false)
+  const [favSaved, setFavSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -187,10 +189,28 @@ function AppContent() {
     }
   }
 
+  const saveFavorite = async () => {
+    if (!resultAudio || !session?.access_token) return
+    setFavSaving(true)
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ result_url: resultAudio }),
+      })
+      if (res.ok) setFavSaved(true)
+    } catch (err) {
+      console.error('Save favorite error:', err)
+    } finally {
+      setFavSaving(false)
+    }
+  }
+
   const resetAll = () => {
     setResultAudio('')
     setText('')
     setToast(null)
+    setFavSaved(false)
   }
 
   return (
@@ -296,6 +316,11 @@ function AppContent() {
 
             <div className="action-buttons">
               <button onClick={downloadAudio} className="action-btn download-btn"><span>📥</span> Download MP3</button>
+              {user && (
+                <button onClick={saveFavorite} className="action-btn save-btn" disabled={favSaving || favSaved}>
+                  <span>{favSaved ? '✅' : '⭐'}</span> {favSaving ? 'Saving...' : favSaved ? 'Saved!' : 'Save to Favorites'}
+                </button>
+              )}
               <button onClick={resetAll} className="action-btn regenerate-btn"><span>🔄</span> New Voice</button>
             </div>
           </div>

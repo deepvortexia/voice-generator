@@ -1,73 +1,103 @@
-# Deep Vortex AI Emoticon Generator
+# Deep Vortex AI Voice Generator
 
-> Create stunning custom AI emoticons and emoji from simple text descriptions in seconds. Type what you want, get a unique high-quality emoticon instantly.
+> Generate realistic AI voices from text — multiple voices, languages, and styles. Instant MP3 download.
 
 ## URL
 
-https://emoticons.deepvortexai.art/
+https://voice.deepvortexai.art
 
 ## About
 
-The Deep Vortex AI Emoticon Generator uses advanced AI to transform text prompts into high-quality custom emoticons and emoji. No design skills needed — just describe your emoticon and the AI creates it.
+The Deep Vortex AI Voice Generator transforms written text into natural-sounding AI speech. Choose from a range of voice styles and languages, type or paste your script, and receive a high-quality MP3 audio file in seconds. The voices are realistic, expressive, and suitable for professional use across video production, e-learning, podcasting, advertising, game development, and more.
 
-Part of the Deep Vortex AI ecosystem: https://deepvortexai.art
+Unlike robotic text-to-speech tools of the past, the Deep Vortex AI Voice Generator produces voices with natural cadence, appropriate emphasis, and human-like expressiveness. Multiple voice options let you match the voice to your content — choose a warm narration voice for an e-learning course, an energetic voice for a promotional video, or a calm voice for a meditation or explainer.
+
+Downloaded MP3 files are immediately usable in any video editor, audio tool, or media player. Credits are shared across your Deep Vortex AI account. New accounts receive 2 free credits to try voice generation immediately.
 
 ## Features
 
-- Text-to-emoticon generation using AI
-- High-quality PNG output
-- Instant results (typically 3-5 seconds)
-- One-click download
-- Favorites gallery (save your best creations to the cloud)
-- Local history (recent generations saved automatically)
-- Platform guide for using emoticons on social media
+- Text-to-speech generation with realistic, expressive AI voices
+- Multiple voice styles — narration, energetic, calm, conversational, and more
+- Multiple language support for global content production
+- MP3 output — universally compatible with all video editors and audio tools
+- Instant processing — audio files generated in seconds
+- One-click download of generated audio
+- Favorites system to save preferred voices and scripts
+- Handles long-form text for narrations, scripts, and articles
+- Mobile-friendly interface
+- Shared credit wallet integrated with all Deep Vortex AI tools
 
-## Compatible Platforms
+## Use Cases
 
-- Discord (custom server emoji)
-- Telegram (custom stickers)
-- Slack (custom emoji)
-- WhatsApp (stickers)
-- Twitter / X (reactions)
-- TikTok, Instagram, Facebook
-- Any platform supporting custom emoji/stickers
+- Creating voiceovers for YouTube videos, explainer videos, and product demos
+- Producing narration for e-learning courses, training videos, and educational content
+- Generating podcast intros, outros, and filler narration
+- Creating voiceovers for TikTok, Instagram Reels, and short-form video content
+- Producing advertising and promotional audio for radio, video ads, and social media
+- Generating character voices and dialogue for indie games and interactive media
+- Creating audio content for audiobooks and long-form narration projects
+- Producing accessibility audio descriptions for websites and digital content
+- Generating placeholder or temp track voiceovers during video production
+- Creating multilingual versions of content for international audiences
 
-## How to Use
+## Target Audience
 
-1. Go to https://emoticons.deepvortexai.art/
-2. Sign in or create a free account (2 free credits included)
-3. Type a description of your desired emoticon in the input field
-4. Press Generate
-5. Download the result or save it to your Favorites
-
-## Example Prompts (effective for this tool)
-
-- "Wizard cat casting spell"
-- "Robot crying rainbow tears"
-- "Dragon eating sushi roll"
-- "Ghost playing electric guitar"
-- "Panda astronaut floating in space"
-- "Devil bunny holding flowers"
-- "Shark wearing top hat"
-- "Alien cooking ramen noodles"
+- YouTube and video creators who need professional voiceovers without hiring voice actors
+- E-learning developers and instructional designers producing course narration
+- Podcasters generating intro/outro scripts and supplemental audio content
+- TikTok and social media creators adding voiceover to short-form video
+- Marketers producing audio for ads, promos, and branded content campaigns
+- Game developers generating character voices and dialogue for indie projects
+- Authors and publishers exploring audiobook production with AI narration
+- Accessibility specialists producing audio descriptions and screen reader content
+- Small business owners creating marketing and explainer videos on a budget
+- Agencies producing multilingual voiceover content for international campaigns
 
 ## Pricing
 
-- 2 free credits on account creation
-- 1 credit per emoticon generated
-- Additional credits available in packs
-- Payments via Stripe
+All credits are shared across every Deep Vortex AI tool. New accounts receive 2 free credits on sign-up — no payment required.
 
-## API
+- Starter: 10 credits — $4.99
+- Basic: 30 credits — $9.99
+- Popular: 75 credits — $19.99
+- Pro: 200 credits — $49.99
+- Ultimate: 500 credits — $99.99
 
-- Generation endpoint: POST /api/generate (authenticated)
-- Favorites endpoint: GET/POST /api/favorites (authenticated)
-- Authentication: Supabase JWT
+Credits do not expire. Use them on any tool in the Deep Vortex AI ecosystem at any time.
 
-## Related Tools
+## FAQ
 
-- AI Image Generator: https://images.deepvortexai.art/
+Q: What voice styles are available?
+A: The tool offers multiple voice styles to suit different content types — including warm and measured narration voices for e-learning and explainer content, energetic and upbeat voices for promotional and advertising material, calm and soothing voices for meditation or wellness content, and conversational voices for podcast-style or interview-format audio.
+
+Q: What languages does the Voice Generator support?
+A: The tool supports multiple languages for global content production. The available language options are displayed in the tool interface. If you need a specific language for a project, the tool interface will show you what is currently available.
+
+Q: What format is the generated audio delivered in?
+A: All generated audio is delivered as MP3 files. MP3 is universally compatible with all video editors (Premiere Pro, Final Cut, DaVinci Resolve), audio tools (Audacity, GarageBand), and media players across all platforms.
+
+Q: How much text can I convert in one generation?
+A: The tool supports both short-form text (a few sentences for ads or social media clips) and longer scripts for narration, course content, and video voiceovers. There may be practical length limits depending on your credit plan — the interface will indicate any restrictions.
+
+Q: How much does one voice generation cost?
+A: Each voice generation costs 1 credit from your shared Deep Vortex AI wallet. The same credits can be used across all tools in the ecosystem — image creation, background removal, 3D modeling, video animation, and more.
+
+Q: Can I use the generated audio commercially?
+A: Yes. Audio generated with Deep Vortex AI Voice Generator is yours to use for both personal and commercial projects, including YouTube videos, advertisements, e-learning courses, and games. Review the full terms of service at deepvortexai.art for complete licensing details.
+
+Q: Can I save voices or scripts I use frequently?
+A: Yes. The favorites system lets you save preferred voice configurations and scripts to your account, making it easy to maintain a consistent voice across ongoing projects or quickly regenerate audio with the same settings.
+
+## All Deep Vortex AI Tools
+
 - Deep Vortex AI Hub: https://deepvortexai.art
+- AI Image Generator: https://images.deepvortexai.art
+- AI Emoticon Generator: https://emoticons.deepvortexai.art
+- AI Background Remover: https://bgremover.deepvortexai.art
+- AI Image Upscaler: https://upscaler.deepvortexai.art
+- AI 3D Model Generator: https://3d.deepvortexai.art
+- AI Voice Generator: https://voice.deepvortexai.art
+- AI Image to Video: https://video.deepvortexai.art
 
 ## Contact
 

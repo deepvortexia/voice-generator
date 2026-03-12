@@ -3,6 +3,12 @@
   "short_name": "Voice Generator",
   "icons": [
     {
+      "src": "/reallitylogoreal.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",

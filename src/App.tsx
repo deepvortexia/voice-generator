@@ -7,6 +7,7 @@ import { PricingModal } from './components/PricingModal'
 import { Notification } from './components/Notification'
 import { useCredits } from './hooks/useCredits'
 import { AuthCallback } from './pages/AuthCallback'
+import { HowToUse } from './pages/HowToUse'
 
 const CREDIT_REFRESH_ERROR = 'Payment successful, but there was a temporary issue syncing your credits. Please refresh the page to see your updated balance.'
 const PENDING_STRIPE_SESSION_KEY = 'pending_stripe_session'
@@ -406,6 +407,11 @@ function App() {
       </AuthProvider>
     )
   }
+
+  if (path === '/how-to-use') {
+    return <HowToUse />
+  }
+
   return (
     <AuthProvider>
       <AppContent />

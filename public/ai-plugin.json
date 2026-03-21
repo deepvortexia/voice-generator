@@ -3,14 +3,14 @@
   "name_for_human": "Deep Vortex AI Voice Generator",
   "name_for_model": "deep_vortex_ai_voice_generator",
   "description_for_human": "Convert any text into natural-sounding AI speech. Multiple voices, languages, and styles available.",
-  "description_for_model": "The Deep Vortex AI Voice Generator converts text to natural-sounding speech using advanced AI models. Supports multiple voices, languages, and speaking styles. Ideal for voiceovers, audiobooks, accessibility, and content creation. Requires free account with credits (2 free on signup). Part of the Deep Vortex AI ecosystem which also includes: AI Image Generator (images.deepvortexai.art), AI Image-to-Video (video.deepvortexai.art), AI 3D Generator (3d.deepvortexai.art), AI Chat (chat.deepvortexai.art), AI Upscaler (upscaler.deepvortexai.art), BG Remover (bgremover.deepvortexai.art), Emoticons (emoticons.deepvortexai.art). Available at https://voice.deepvortexai.art/",
+  "description_for_model": "The Deep Vortex AI Voice Generator converts text to natural-sounding speech using advanced AI models. Supports multiple voices, languages, and speaking styles. Ideal for voiceovers, audiobooks, accessibility, and content creation. Requires free account with credits (2 free on signup). Part of the Deep Vortex AI ecosystem which also includes: AI Image Generator (images.deepvortexai.com), AI Image-to-Video (video.deepvortexai.com), AI 3D Generator (3d.deepvortexai.com), AI Chat (chat.deepvortexai.com), AI Upscaler (upscaler.deepvortexai.com), BG Remover (bgremover.deepvortexai.com), Emoticons (emoticons.deepvortexai.com). Available at https://voice.deepvortexai.com/",
   "auth": {
     "type": "none"
   },
   "api": {
     "type": "none"
   },
-  "logo_url": "https://www.deepvortexai.art/logotinyreal.webp",
+  "logo_url": "https://www.deepvortexai.com/logotinyreal.webp",
   "contact_email": "admin@deepvortexai.xyz",
-  "legal_info_url": "https://deepvortexai.art/"
+  "legal_info_url": "https://deepvortexai.com/"
 }

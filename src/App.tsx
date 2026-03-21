@@ -30,6 +30,11 @@ function AppContent() {
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [toast, setToast] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' } | null>(null)
+  const [loadingStage, setLoadingStage] = useState(0)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const elapsedIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const { user, session, loading } = useAuth()
   const { hasCredits, refreshProfile } = useCredits()
@@ -91,9 +96,38 @@ function AppContent() {
     if (!user) { setIsAuthModalOpen(true); return }
     if (!hasCredits) { setIsPricingModalOpen(true); return }
 
+    const clearIntervals = () => {
+      if (progressIntervalRef.current) { clearInterval(progressIntervalRef.current); progressIntervalRef.current = null }
+      if (elapsedIntervalRef.current) { clearInterval(elapsedIntervalRef.current); elapsedIntervalRef.current = null }
+    }
+
     setIsLoading(true)
     setResultAudio('')
     setToast(null)
+    setLoadingStage(1)
+    setLoadingProgress(0)
+    setElapsedSeconds(0)
+
+    elapsedIntervalRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000)
+
+    // Stage 1: progress 0→10% over ~600ms (step 2 every 60ms)
+    await new Promise<void>(resolve => {
+      let p = 0
+      progressIntervalRef.current = setInterval(() => {
+        p += 2
+        setLoadingProgress(p)
+        if (p >= 10) {
+          if (progressIntervalRef.current) { clearInterval(progressIntervalRef.current); progressIntervalRef.current = null }
+          resolve()
+        }
+      }, 60)
+    })
+
+    // Stage 2: asymptotic progress toward 85%
+    setLoadingStage(2)
+    progressIntervalRef.current = setInterval(() => {
+      setLoadingProgress(p => { const gap = 85 - p; return p + gap * 0.003 })
+    }, 100)
 
     try {
       const token = session?.access_token
@@ -125,6 +159,7 @@ function AppContent() {
         } else {
           setToast({ title: 'Network Error', message: 'Could not connect to the server. Please check your connection.', type: 'error' })
         }
+        clearIntervals()
         return
       }
       clearTimeout(timeout)
@@ -146,13 +181,32 @@ function AppContent() {
             setToast({ title: 'Generation Failed', message: (data.error || 'An unexpected error occurred') + '. No credits were deducted.', type: 'error' })
             break
         }
+        clearIntervals()
         return
       }
 
       const data = await response.json()
       setResultAudio(data.audio)
       await refreshProfile()
+
+      // Stage 3: finalize to 100%
+      if (progressIntervalRef.current) { clearInterval(progressIntervalRef.current); progressIntervalRef.current = null }
+      setLoadingStage(3)
+      await new Promise<void>(resolve => {
+        progressIntervalRef.current = setInterval(() => {
+          setLoadingProgress(p => {
+            if (p >= 100) {
+              if (progressIntervalRef.current) { clearInterval(progressIntervalRef.current); progressIntervalRef.current = null }
+              resolve()
+              return 100
+            }
+            return p + 3
+          })
+        }, 40)
+      })
+      clearIntervals()
     } catch (err: any) {
+      clearIntervals()
       setToast({ title: 'Generation Failed', message: err.message || 'An unexpected error occurred.', type: 'error' })
     } finally {
       setIsLoading(false)
@@ -295,9 +349,32 @@ function AppContent() {
 
         {isLoading && (
           <div className="loading-section">
-            <div className="loading-spinner-large"></div>
-            <p className="loading-message">Generating your voice... 🎙️</p>
-            <p className="loading-hint">This usually takes 5–15 seconds</p>
+            <div className="progress-stages">
+              <div className={`progress-stage${loadingStage===1?' stage-active':loadingStage>1?' stage-done':''}`}>
+                <div className="stage-dot"/>
+                <span>Uploading image...</span>
+              </div>
+              <div className={`progress-stage${loadingStage===2?' stage-active':loadingStage>2?' stage-done':''}`}>
+                <div className="stage-dot"/>
+                <span>AI is animating your image...</span>
+              </div>
+              <div className={`progress-stage${loadingStage===3?' stage-active':''}`}>
+                <div className="stage-dot"/>
+                <span>Finalizing video...</span>
+              </div>
+            </div>
+            <div className="progress-bar-wrapper">
+              <div className="progress-bar-track">
+                <div className="progress-bar-fill" style={{width:`${loadingProgress}%`}}/>
+              </div>
+              {loadingProgress>0&&(
+                <div className="progress-bar-tip" style={{left:`${loadingProgress}%`}}/>
+              )}
+            </div>
+            <div className="progress-footer">
+              <span className="progress-percent">{Math.round(loadingProgress)}%</span>
+              <span className="progress-elapsed">{elapsedSeconds}s...</span>
+            </div>
           </div>
         )}
 

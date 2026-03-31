@@ -1,4 +1,5 @@
 // src/pages/HowToUse.tsx
+import { useEffect } from 'react'
 
 const tools = [
   { name: 'Emoticons',       icon: '😃', desc: 'Custom emoji creation',       href: 'https://emoticons.deepvortexai.com' },
@@ -31,6 +32,14 @@ const steps = [
 ]
 
 export function HowToUse() {
+  useEffect(() => {
+    document.title = "How to Use the AI Voice Generator | Deep Vortex AI";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', 'Step-by-step guide to generating realistic AI voices with Deep Vortex AI. Choose your voice style, enter text, and download in seconds.');
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute('href', 'https://voice.deepvortexai.com/how-to-use');
+  }, []);
+
   return (
     <div style={styles.page}>
       {/* Back link */}
